@@ -32,8 +32,8 @@ class NumpyArrayEncoder(JSONEncoder):
 
 
 # Path.cwd() gives the current directory of this file.
-path = Path().cwd() / "data/Models/"
-dataPath = Path().cwd() / "data/"
+path = Path().cwd() / "data/Models"
+dataPath = Path().cwd() / "data"
 
 # Gets all the file names that end with .h5 which are the model files
 modelPaths = [p.name for p in list(path.glob("*.h5"))]
@@ -63,7 +63,7 @@ groups = []
 print("\n \n")
 
 # Loops over the file names, converts the weights to json objects
-# Saves the parsed weights and models in a separate file. 
+# Saves the parsed weights and models in a separate file.
 for fileName in modelPaths:
     directory = fileName.removesuffix(".h5")
 
@@ -88,4 +88,3 @@ for fileName in modelPaths:
         json.dump(weights, weightsFile, cls=NumpyArrayEncoder)
 
     print("Saved Model {} successfully".format(directory))
-
