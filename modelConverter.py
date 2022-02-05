@@ -42,7 +42,7 @@ modelPaths = [p.name for p in list(path.glob("*.h5"))]
 # Loops over each file to conver the file from .h5 to .json format
 for fileName in modelPaths:
     modelPath = fileName
-    savePath = fileName.removesuffix(".h5")
+    savePath = fileName.replace(".h5", "")
 
     # subprocess is  a library that allows to run command line scripts
     # in Python code.
