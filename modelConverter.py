@@ -65,7 +65,7 @@ print("\n \n")
 # Loops over the file names, converts the weights to json objects
 # Saves the parsed weights and models in a separate file.
 for fileName in modelPaths:
-    directory = fileName.removesuffix(".h5")
+    directory = fileName.replace(".h5", "")
 
     jsonModelPath = path / directory / "model.json"
     modelJson = jsonModelPath.open(mode="r")
