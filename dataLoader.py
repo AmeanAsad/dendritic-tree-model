@@ -8,42 +8,78 @@ Created on Wed Jan 26 12:01:11 2022
 
 from pathlib import Path
 import pickle
+import pandas as pd
+import numpy as np
 
-"""
-Loading Morphology file desrcibing structure of the neuron and coordinates
-of different branches.
-"""
-morphologyFilePath = Path("./files/morphology.pickle")
-morphologyFile = morphologyFilePath.open(mode="rb")
-morphologyDict = pickle.load(morphologyFile, encoding='latin1')
+dataFile = Path("data/simulations")
 
-segmentsLength = morphologyDict["all_segments_length"]
-segmentDistFromSoma = morphologyDict['all_sections_distance_from_soma']
-segmentsType = morphologyDict['all_segments_type']
-segmentsSectionDistFromSoma = morphologyDict['all_segments_section_distance_from_soma']
-segmentsSectionInd = morphologyDict['all_segments_section_index']
-segmentIndexWithinSectionIndex = morphologyDict[
-    'all_segments_segment_index_within_section_index']
+modelPaths = [p for p in list(dataFile.glob("*.p"))]
 
-basalSectionCoords = morphologyDict['all_basal_section_coords']
-basalSegmentCoords = morphologyDict['all_basal_segment_coords']
-apicalSectionCoords = morphologyDict['all_apical_section_coords']
-apicalSegmentCoords = morphologyDict['all_apical_segment_coords']
 
-segmentIdxToCoords = {}
-segmentIdxToSectionIdx = {}
+def spikeDictToArray(spikeTimes, numOfSegments, numDataPoints):
+    
+    spikeValuesMatrix = np.zeros((numOfSegments, numDataPoints))
+    spikeTimeVals = spikeTimes.values()
+    
+    for idx, spikeArray in enumerate(spikeTimeVals):
+        for spikeTime in spikeArray:
+            spikeValuesMatrix[idx, spikeTime] = 1.0
+    return spikeValuesMatrix
+    
+def parseSimulationFile(filePath):
+    """
+    Parameters
+    ----------
+    filePath : Pathlib Path
+        A filepath to a pickled simulation file generated.
+        The filepath must be a Pathlib path for the function to work. 
+    Returns
+    -------
+    Parsed 
 
-for idx, segment in enumerate(segmentsType[:5]):
+    """
+    data = filePath.open(mode="rb")
+    data = pickle.load(data, encoding='latin1')
 
-    currentSegmentIdx = segmentIndexWithinSectionIndex[idx]
-    if segment == "basal":
-        currentSectionIdx = segmentsSectionInd[idx]
-        segmentCoords = basalSegmentCoords[(currentSectionIdx, currentSegmentIdx)]
-        segmentIdxToCoords[idx] = segmentCoords
-        segmentIdxToSectionIdx[idx] = ("basal", currentSectionIdx)
+    dataResults = data["Results"]["listOfSingleSimulationDicts"][:1]
+    dataParams = data["Params"]
 
-    if segment == "apical":
-        currentSectionIdx = segmentsSectionInd[idx] - len(basalSectionCoords)
-        segmentCoords = apicalSegmentCoords[(currentSectionIdx, currentSegmentIdx)]
-        segmentIdxToCoords[idx] = segmentCoords
-        segmentIdxToSectionIdx[idx] = ("apical", currentSectionIdx)
+    numDataPoints = dataParams["totalSimDurationInSec"]*1000
+    numOfSimulations = len(dataResults)
+    numOfSegments = len(dataParams["allSegmentsType"])
+    synapseCount = 639 * 2 # 639 Inhibitory + 639 Excitatory inputs
+    
+
+    X = np.zeros((synapseCount, numDataPoints, numOfSimulations))
+    spikeVals = np.zeros((numDataPoints, numOfSimulations))
+    somaVoltages = np.zeros((numDataPoints, numOfSimulations))
+    nexusVoltages = np.zeros((numDataPoints, numOfSimulations))
+    
+    dendriticVoltages  = np.zeros(
+        (numOfSegments, numDataPoints,numOfSimulations), dtype=np.float16)
+
+    
+    for idx, simulationResult in enumerate(dataResults):
+    
+        inhibitorySpikes = spikeDictToArray(simulationResult["inhInputSpikeTimes"],
+                                    numOfSegments, numDataPoints)
+        excitatorySpikes = spikeDictToArray(simulationResult["exInputSpikeTimes"],
+                                    numOfSegments, numDataPoints)
+        
+        X[:,:, idx] = np.vstack((excitatorySpikes, inhibitorySpikes))
+        dendriticVoltages[:,:,idx] = simulationResult["dendriticVoltagesLowRes"]
+            
+        spikeTimes = (simulationResult['outputSpikeTimes'].astype(float) - 0.5).astype(int)
+        spikeVals[spikeTimes, idx] = 1.0
+        
+        somaVoltages[:,idx] = simulationResult["somaVoltageLowRes"]
+        nexusVoltages[:,idx] = simulationResult["nexusVoltageLowRes"]
+        
+        somaVoltages[spikeTimes, idx] = 30
+
+    
+    return X, spikeVals, somaVoltages, nexusVoltages, dendriticVoltages, dataResults
+    
+    
+X, spike, soma, n, v, d = parseSimulationFile(modelPaths[0])
+
