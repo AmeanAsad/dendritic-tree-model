@@ -9,7 +9,7 @@ from pathlib import Path
 import pickle
 
 # Path to simulation pickle
-sim_experiment_file = Path(".\sim__saved_InputSpikes_DVTs__561_outSpikes__128_simulationRuns__6_secDuration__randomSeed_100520.p")
+sim_experiment_file = Path("data\simulations\sim__saved_InputSpikes_DVTs__561_outSpikes__128_simulationRuns__6_secDuration__randomSeed_100520.p")
 
 # pickle contains a dictionary
 experiment_dict = pickle.load(open(sim_experiment_file, "rb" ), encoding='latin1')
