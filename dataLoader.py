@@ -41,7 +41,7 @@ def parseSimulationFile(filePath):
 
     print("Currently parsing file: {}".format(filePath.name))
     startTime = timer()
-    
+
     data = filePath.open(mode="rb")
     data = pickle.load(data, encoding='latin1')
 
@@ -50,9 +50,12 @@ def parseSimulationFile(filePath):
 
     numDataPoints = dataParams["totalSimDurationInSec"]*1000
     numOfSimulations = len(dataResults)
+
+    #  allSegmentsType is a list (length 639) half "basal"/half "apical"
     numOfSegments = len(dataParams["allSegmentsType"])
     synapseCount = 639 * 2  # 639 Inhibitory + 639 Excitatory inputs
 
+    # 1278 x 6000 x 128 multidimensional array
     X = np.zeros((synapseCount, numDataPoints, numOfSimulations))
     spikeVals = np.zeros((numDataPoints, numOfSimulations))
     somaVoltages = np.zeros((numDataPoints, numOfSimulations))
@@ -79,6 +82,7 @@ def parseSimulationFile(filePath):
 
         somaVoltages[spikeTimes, idx] = 30
 
+    # 6000x1 counting array, increments of 1
     timeStamps = simulationResult["recordingTimeLowRes"]
 
     endTime = timer() - startTime
@@ -101,7 +105,7 @@ def parseSimulationFileForModel(filePath):
 
     print("Currently parsing file: {}".format(filePath.name))
     startTime = timer()
-    
+
     data = filePath.open(mode="rb")
     data = pickle.load(data, encoding='latin1')
 
