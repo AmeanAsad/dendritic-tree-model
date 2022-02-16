@@ -12,17 +12,17 @@ import IPython
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
+import h5py
 
-from pathlib import Path
-
+import os
 
 # Change the directory to fetch the .h5 files
-
+filename = open('C:/Users/julia/Desktop/dendritic-tree-model/data/Models/NMDA_TCN__DWT_7_128_153__model.h5', "r")
 
 
 #Read the .h5 model that corresponds to the correct model architecture
-#model = keras.models.load_model('/NMDA_TCN__DWT_7_128_153__model.h5')
-#weights = model.get_weights()
+model = keras.models.load_model(filename)
+weights = model.get_weights()
 
 # Define the Pytorch Architecture (Inspired by the Keras Model)
 def CausalConv1d(in_channels, out_channels, kernel_size, stride = (1,), dilation = (1,), groups = 1, bias = True):
@@ -101,7 +101,7 @@ net.batch3.weight.data=torch.from_numpy(weights[5])
 net.conv4.weight.data=torch.from_numpy(np.transpose(weights[6]))
 net.batch4.weight.data=torch.from_numpy(weights[7])
 net.conv5.weight.data=torch.from_numpy(np.transpose(weights[8]))
-net.batch5.weight.data=torch.from_numpy(weights[9]])
+net.batch5.weight.data=torch.from_numpy(weights[9])
 net.conv6.weight.data=torch.from_numpy(np.transpose(weights[10]))
 net.batch6.weight.data=torch.from_numpy(weights[11])
 net.conv7.weight.data=torch.from_numpy(np.transpose(weights[12]))
