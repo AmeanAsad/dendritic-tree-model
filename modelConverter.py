@@ -88,3 +88,5 @@ for fileName in modelPaths:
         json.dump(weights, weightsFile, cls=NumpyArrayEncoder)
 
     print("Saved Model {} successfully".format(directory))
+
+#%%
