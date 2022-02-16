@@ -10,6 +10,9 @@ from pathlib import Path
 import pickle
 import numpy as np
 from timeit import default_timer as timer
+from dataset import SimulationDataset
+from torch.utils.data import DataLoader
+from matplotlib import pyplot as plt
 
 dataFile = Path("data/simulations")
 
@@ -118,7 +121,7 @@ def parseSimulationFileForModel(filePath):
     synapseCount = 639 * 2  # 639 Inhibitory + 639 Excitatory inputs
 
     X = np.zeros((synapseCount, numDataPoints*numOfSimulations))
-    spikeVals = np.zeros((numDataPoints*numOfSimulations))
+    spikeVals = np.zeros((numDataPoints*numOfSimulations, 1))
     somaVoltages = np.zeros((numDataPoints*numOfSimulations))
     nexusVoltages = np.zeros((numDataPoints*numOfSimulations))
 
@@ -137,7 +140,7 @@ def parseSimulationFileForModel(filePath):
         dendriticVoltages[:, startIdx:endIdx] = simulationResult["dendriticVoltagesLowRes"]
 
         spikeTimes = (simulationResult['outputSpikeTimes'].astype(float) - 0.5).astype(int)
-        spikeVals[spikeTimes + startIdx] = 1.0
+        spikeVals[spikeTimes + startIdx, 0] = 1.0
 
         somaVoltages[startIdx:endIdx] = simulationResult["somaVoltageLowRes"]
         nexusVoltages[startIdx:endIdx] = simulationResult["nexusVoltageLowRes"]
@@ -151,4 +154,16 @@ def parseSimulationFileForModel(filePath):
 
     return X, somaVoltages, nexusVoltages, dendriticVoltages, spikeVals
 
-X, soma, nexus, dvt, spike =  parseSimulationFileForModel(modelPaths[0])
+
+X, soma, nexus, dvt, spike = parseSimulationFileForModel(modelPaths[0])
+
+
+dataset = SimulationDataset(X, spike, windowSize=150)
+print(dataset[0])
+
+t, img = dataset[3000]
+print(t.shape)
+print(img)
+plt.figure()
+plt.imshow(t)
+data_load = DataLoader(dataset, batch_size=64)

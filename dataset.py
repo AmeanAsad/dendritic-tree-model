@@ -17,22 +17,24 @@ import torch
 from torch.utils.data import Dataset
 from torchvision import datasets
 from torchvision.transforms import ToTensor
-import matplotlib.pyplot as plt
+from torch.utils.data import DataLoader
 
+# # pathway to input array
+# inputArrayPath = r''
 
-# pathway to input array
-inputArrayPath = r''
+# # Setup input array as a dataframe
+# inputDF = pd.read_csv(inputArrayPath)
+# # Labels are all possible spike times
+# labelsList = list(range(0, 6000 * 128))
 
-# Setup input array as a dataframe
-inputDF = pd.read_csv(inputArrayPath)
-# Labels are all possible spike times
-labelsList = list(range(0, 6000 * 128))
 
 # Custom Dataset
 class SimulationDataset(Dataset):
-    def __init__(self, inputData, rootDir):
-        self.inputData = pd.DataFrame(inputData)
-        self.rootDir = rootDir
+    def __init__(self, inputData, outputData, windowSize):
+        self.inputData = torch.tensor(inputData)
+        self.windowSize = windowSize
+        self.outputData = torch.tensor(outputData)
+
 
     def __len__(self):
         return len(self.inputData)
@@ -40,18 +42,14 @@ class SimulationDataset(Dataset):
     # Add whatever will need to be retrieved from the data
     def __getitem__(self, idx):
         # Assuming spike times are listed in the first column of the data, grabs the spike value (0/1) at a specific time
-        spikeValue = os.path.join(self.rootDir, self.inputData.iloc[idx, 0])
-        return spikeValue
+        endIdx = self.windowSize + idx
+        inputItem = self.inputData[:, idx:endIdx]
+        outputItem = self.outputData[endIdx, 0]
+        
+        return inputItem, outputItem
 
 
 # Load the training data
-training_data = datasets.SimulationData(
-    root="data",  # path to train/test data
-    train=True,
-)
 
-# Load the test data
-test_data = SimulationDataset(
-    root="data",
-    train=False,
-)
+
+
