@@ -1,3 +1,4 @@
+# Model 4
 from __future__ import print_function
 import torch.nn as nn
 import torch.nn.functional as F
@@ -74,3 +75,4 @@ class Net(nn.Module):
         dendrites = F.linear(dendrites)
 
         return spikes, soma, dendrites
+#%%
