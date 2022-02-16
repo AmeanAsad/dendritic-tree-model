@@ -13,55 +13,97 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
-# Get the model weights from the keras file
-model = keras.models.load_model('NMDA_TCN__DWT_7_128_153__model.h5')
-weights = model.get_weights()
+from pathlib import Path
+
+
+# Change the directory to fetch the .h5 files
+
+
+
+#Read the .h5 model that corresponds to the correct model architecture
+#model = keras.models.load_model('/NMDA_TCN__DWT_7_128_153__model.h5')
+#weights = model.get_weights()
 
 # Define the Pytorch Architecture (Inspired by the Keras Model)
-def hidden_init(layer):
-    fan_in = layer.weight.data.size()[0]
-    lim = 1. / np.sqrt(fan_in)
-    return (-lim, lim)  
+def CausalConv1d(in_channels, out_channels, kernel_size, stride = (1,), dilation = (1,), groups = 1, bias = True):
+    pad = (kernel_size -1)*dilation
+    return nn.Conv1d(in_channels, out_channels, kernel_size, stride = stride, padding = pad, dilation = dilation, groups = groups, bias = bias)
 
-class Actor(nn.Module):
-    """Actor (Policy) Model."""
 
-    def __init__(self, state_size, action_size, seed, h):
-        """Initialize parameters and build model.
-        Params
-        ======
-            state_size (int): Dimension of each state
-            action_size (int): Dimension of each action
-            seed (int): Random seed
-            fc1_units (int): Number of nodes in first hidden layer
-            fc2_units (int): Number of nodes in second hidden layer
-        """
-        super(Actor, self).__init__()
-        self.seed = torch.manual_seed(seed)
-        self.fc1 = nn.Linear(state_size, h)
-        self.fc2 = nn.Linear(h, h)
-        self.fc3 = nn.Linear(h, h)
-        self.fc4 = nn.Linear(h, h)
-        self.fc5 = nn.Linear(h, action_size)
-        self.reset_parameters()
+class Net(nn.Module):
+    def __init__(self):
+        super(Net, self).__init__()
+        #convolutional layers
+        self.conv1 = CausalConv1d(in_channels = 1278, out_channels = 400, kernel_size = 45, stride = (1,) , dilation = 1, groups = 1, bias = True)
+        self.conv2 = CausalConv1d(in_channels = 128, out_channels = 400, kernel_size = 19, stride = (1,) , dilation = 1, groups = 1, bias = True)
+        self.conv3 = CausalConv1d(in_channels = 128, out_channels = 400, kernel_size = 19, stride = (1,) , dilation = 1, groups = 1, bias = True)
+        self.conv4 = CausalConv1d(in_channels = 128, out_channels = 400, kernel_size = 19, stride = (1,) , dilation = 1, groups = 1, bias = True)
+        self.conv5 = CausalConv1d(in_channels = 128, out_channels = 400, kernel_size = 19, stride = (1,) , dilation = 1, groups = 1, bias = True)
+        self.conv6 = CausalConv1d(in_channels = 128, out_channels = 400, kernel_size = 19, stride = (1,) , dilation = 1, groups = 1, bias = True)
+        self.conv7 = CausalConv1d(in_channels = 128, out_channels = 400, kernel_size = 19, stride = (1,) , dilation = 1, groups = 1, bias = True)
+        
+        #batch normalization layers
+        self.batch1 = nn.BatchNorm1d(num_features = 128, eps = 0.001, momentum = 0.99, affine = True, track_running_stats = True, device = None, dtype = None)
+        self.batch2 = nn.BatchNorm1d(num_features = 128, eps = 0.001, momentum = 0.99, affine = True, track_running_stats = True, device = None, dtype = None)
+        self.batch3 = nn.BatchNorm1d(num_features = 128, eps = 0.001, momentum = 0.99, affine = True, track_running_stats = True, device = None, dtype = None)
+        self.batch4 = nn.BatchNorm1d(num_features = 128, eps = 0.001, momentum = 0.99, affine = True, track_running_stats = True, device = None, dtype = None)
+        self.batch5 = nn.BatchNorm1d(num_features = 128, eps = 0.001, momentum = 0.99, affine = True, track_running_stats = True, device = None, dtype = None)
+        self.batch6 = nn.BatchNorm1d(num_features = 128, eps = 0.001, momentum = 0.99, affine = True, track_running_stats = True, device = None, dtype = None)
+        self.batch7 = nn.BatchNorm1d(num_features = 128, eps = 0.001, momentum = 0.99, affine = True, track_running_stats = True, device = None, dtype = None)
+        
+        #output predictions
+        self.spikes = CausalConv1d(in_channels = 128, out_channels = 400, kernel_size = 1, stride = (1,) , dilation = 1, groups = 1, bias = True)
+        self.soma = CausalConv1d(in_channels = 128, out_channels = 400, kernel_size = 1, stride = (1,) , dilation = 1, groups = 1, bias = True)
+        self.dendrites = CausalConv1d(in_channels = 128, out_channels = 400, kernel_size = 1, stride = (1,) , dilation = 1, groups = 1, bias = True)
+        
+    def forward(self, x):
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = self.batch1(x)
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = self.batch2(x)
+        x = self.conv3(x)
+        x = F.relu(x)
+        x = self.batch3(x)
+        x = self.conv4(x)
+        x = F.relu(x)
+        x = self.batch4(x)
+        x = self.conv5(x)
+        x = F.relu(x)
+        x = self.batch5(x)
+        x = self.conv6(x)
+        x = F.relu(x)
+        x = self.batch6(x)
+        x = self.conv7(x)
+        x = F.relu(x)
+        x = self.batch7(x)
+        
+        spikes = self.spikes(x)
+        spikes = F.sigmoid(spikes)
+        soma = self.soma(x)
+        soma = F.linear(soma)
+        dendrites = self.dendrites(x)
+        dendrites = F.linear(dendrites)
+        
+        return spikes, soma, dendrites
 
-    def reset_parameters(self):
-        self.fc1.weight.data.uniform_(*hidden_init(self.fc1))
-        self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
-        self.fc3.weight.data.uniform_(*hidden_init(self.fc3))
-        self.fc4.weight.data.uniform_(*hidden_init(self.fc4))
-        self.fc5.weight.data.uniform_(-3e-3, 3e-3)
-
-    def forward(self, state):
-        """Build an actor (policy) network that maps states -> actions."""
-        x = F.relu(self.fc1(state))
-        x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
-        x = F.relu(self.fc4(x))
-
-        return F.tanh(self.fc5(x))
-
-net=Actor(1,1,time.time(),32)
+# Compare the Keras and Pytorch Weights to verify correctness of defined Pytorch model
 
 #Load the weights into Pytorch Model
 #Transpose the weights, but not the biases (Keras vs Pytorch syntax)
+net.conv1.weight.data=torch.from_numpy(np.transpose(weights[0]))
+net.batch1.weight.data=torch.from_numpy(weights[1])
+net.conv2.weight.data=torch.from_numpy(np.transpose(weights[2]))
+net.batch2.weight.data=torch.from_numpy(weights[3])
+net.conv3.weight.data=torch.from_numpy(np.transpose(weights[4]))
+net.batch3.weight.data=torch.from_numpy(weights[5])
+net.conv4.weight.data=torch.from_numpy(np.transpose(weights[6]))
+net.batch4.weight.data=torch.from_numpy(weights[7])
+net.conv5.weight.data=torch.from_numpy(np.transpose(weights[8]))
+net.batch5.weight.data=torch.from_numpy(weights[9]])
+net.conv6.weight.data=torch.from_numpy(np.transpose(weights[10]))
+net.batch6.weight.data=torch.from_numpy(weights[11])
+net.conv7.weight.data=torch.from_numpy(np.transpose(weights[12]))
+net.batch7.weight.data=torch.from_numpy(weights[13])
+
