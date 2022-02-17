@@ -226,7 +226,7 @@ net.batch3.running_var.data = torch.from_numpy(weights[17])
 
 #Convolutional Layer 4
 net.conv4.weight.data = torch.from_numpy(np.transpose(weights[18]))
-net.conv1.bias.data = torch.from_numpy(weights[19])
+net.conv4.bias.data = torch.from_numpy(weights[19])
 
 #Batch Layer 4
 net.batch4.weight.data = torch.from_numpy(weights[20])
@@ -241,9 +241,9 @@ net.conv5.bias.data = torch.from_numpy(weights[25])
 
 #Batch Layer 5
 net.batch5.weight.data = torch.from_numpy(weights[26])
-net.batch5.bias[0].data = torch.from_numpy(weights[27])
-net.batch5.bias[1].data = torch.from_numpy(weights[28])
-net.batch5.bias[2].data = torch.from_numpy(weights[29])
+net.batch5.bias.data = torch.from_numpy(weights[27])
+net.batch5.running_mean.data = torch.from_numpy(weights[28])
+net.batch5.running_var.data = torch.from_numpy(weights[29])
 
 #Convolutional Layer 6
 net.conv6.weight.data = torch.from_numpy(np.transpose(weights[30]))
@@ -275,24 +275,24 @@ net.batch8.bias.data = torch.from_numpy(weights[45])
 net.batch8.running_mean.data = torch.from_numpy(weights[46])
 net.batch8.running_var.data = torch.from_numpy(weights[47])
 
-#Convolutional Layer 8
-net.conv8.weight.data = torch.from_numpy(np.transpose(weights[48]))
-net.conv8.bias.data = torch.from_numpy(weights[49])
+#Convolutional Layer 9
+net.conv9.weight.data = torch.from_numpy(np.transpose(weights[48]))
+net.conv9.bias.data = torch.from_numpy(weights[49])
 
 #Batch Layer 8
-net.batch8.weight.data = torch.from_numpy(weights[50])
-net.batch8.bias.data = torch.from_numpy(weights[51])
-net.batch8.running_mean.data = torch.from_numpy(weights[52])
-net.batch8.running_var.data = torch.from_numpy(weights[53])
+net.batch9.weight.data = torch.from_numpy(weights[50])
+net.batch9.bias.data = torch.from_numpy(weights[51])
+net.batch9.running_mean.data = torch.from_numpy(weights[52])
+net.batch9.running_var.data = torch.from_numpy(weights[53])
 
 #Spike Output Layer
 net.spikes.weight.data = torch.from_numpy(np.transpose(weights[54]))
-net.conv1.bias.data = torch.from_numpy(weights[55])
+net.spikes.bias.data = torch.from_numpy(weights[55])
 
 # Soma Output Layer
 net.soma.weight.data = torch.from_numpy(np.transpose(weights[56]))
-net.conv1.bias.data = torch.from_numpy(weights[57])
+net.soma.bias.data = torch.from_numpy(weights[57])
 
 #Dendrite Output Layer
 net.dendrites.weight.data = torch.from_numpy(np.transpose(weights[58]))
-net.conv1.bias.data = torch.from_numpy(weights[59])
+net.dendrites.bias.data = torch.from_numpy(weights[59])
