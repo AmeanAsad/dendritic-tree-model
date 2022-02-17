@@ -2,7 +2,7 @@
 """
 Created on Wed Jan 26 12:01:11 2022
 
-@authors: Amean Asad,
+@authors: Amean Asad, Eric Venditti
 """
 
 
@@ -39,7 +39,11 @@ def parseSimulationFile(filePath):
         The filepath must be a Pathlib path for the function to work.
     Returns
     -------
-    Parsed
+    X: Array representing the inputs at each time stamp
+    spikeVals: Array of boolean spike values at each time stamp
+    somaVoltages: Array of soma voltages at each time stamp
+    nexusVoltages: Array of nexus voltages at each time stamp
+    dendriticVoltages: Array of dendritic voltages at each time stamp
     """
 
     print("Currently parsing file: {}".format(filePath.name))
@@ -103,7 +107,11 @@ def parseSimulationFileForModel(filePath):
         The filepath must be a Pathlib path for the function to work.
     Returns
     -------
-    Parsed
+    X: Array representing the inputs at each time stamp
+    spikeVals: Array of boolean spike values at each time stamp
+    somaVoltages: Array of soma voltages at each time stamp
+    nexusVoltages: Array of nexus voltages at each time stamp
+    dendriticVoltages: Array of dendritic voltages at each time stamp
     """
 
     print("Currently parsing file: {}".format(filePath.name))
@@ -159,11 +167,10 @@ X, soma, nexus, dvt, spike = parseSimulationFileForModel(modelPaths[0])
 
 
 dataset = SimulationDataset(X, spike, windowSize=150)
-print(dataset[0])
 
-t, img = dataset[3000]
-print(t.shape)
-print(img)
-plt.figure()
-plt.imshow(t)
-data_load = DataLoader(dataset, batch_size=64)
+# Visualize a random sample from the data
+# synapses, spike = dataset[50]
+# print(synapses.shape)
+# plt.figure()
+# plt.imshow(synapses)
+# data_load = DataLoader(dataset, batch_size=64)
