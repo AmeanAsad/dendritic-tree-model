@@ -15,7 +15,7 @@ dataFile = Path("../data/Models/NMDA_TCN__DWT_7_128_153__model.h5")
 #Load the Keras model and show its architecture
 NN_model = tf.keras.models.load_model(dataFile)
 NN_model.summary()
-
+print("Summary done");
 # Read the .h5 model that corresponds to the correct model architecture
 model = keras.models.load_model(dataFile)
 weights = model.get_weights()
@@ -60,19 +60,19 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         # convolutional layers
-        self.conv1 = CausalConv1d(in_channels=1278, out_channels=400, kernel_size=45, stride=(
+        self.conv1 = CausalConv1d(in_channels=1278, out_channels=128, kernel_size=45, stride=(
             1,), dilation=1, groups=1, bias=True)
-        self.conv2 = CausalConv1d(in_channels=128, out_channels=400, kernel_size=19, stride=(
+        self.conv2 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
             1,), dilation=1, groups=1, bias=True)
-        self.conv3 = CausalConv1d(in_channels=128, out_channels=400, kernel_size=19, stride=(
+        self.conv3 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
             1,), dilation=1, groups=1, bias=True)
-        self.conv4 = CausalConv1d(in_channels=128, out_channels=400, kernel_size=19, stride=(
+        self.conv4 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
             1,), dilation=1, groups=1, bias=True)
-        self.conv5 = CausalConv1d(in_channels=128, out_channels=400, kernel_size=19, stride=(
+        self.conv5 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
             1,), dilation=1, groups=1, bias=True)
-        self.conv6 = CausalConv1d(in_channels=128, out_channels=400, kernel_size=19, stride=(
+        self.conv6 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
             1,), dilation=1, groups=1, bias=True)
-        self.conv7 = CausalConv1d(in_channels=128, out_channels=400, kernel_size=19, stride=(
+        self.conv7 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
             1,), dilation=1, groups=1, bias=True)
 
         # batch normalization layers
@@ -238,4 +238,21 @@ net.conv1.bias.data = torch.from_numpy(weights[45])
 net.dendrites.weight.data = torch.from_numpy(np.transpose(weights[46]))
 net.conv1.bias.data = torch.from_numpy(weights[47])
 
+
+import json 
+from pathlib import Path
+
+path = Path("../data/ParsedModels/NMDA_TCN__DWT_7_128_153__model/weights.json")
+
+data = path.open(mode="rb")
+
+d = json.load(data)
+t = d[2]["data"]
+t = np.array(t)
+
+
+path2 = Path("../data/ParsedModels/NMDA_TCN__DWT_7_128_153__model/model.json")
+
+data2 = path2.open(mode="rb")
+d2 = json.load(data2)
 
