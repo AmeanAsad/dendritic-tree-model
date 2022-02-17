@@ -11,7 +11,7 @@ from pathlib import Path
 import json
 
 # Load the parsed weights from models to determine location of weights to load
-path = Path("../data/ParsedModels/NMDA_TCN__DWT_7_128_153__model/weights.json")
+path = Path("../data/ParsedModels/NMDA_TCN__DWT_8_224_217__model/weights.json")
 
 data = path.open(mode="rb")
 
@@ -20,14 +20,14 @@ t = d[2]["data"]
 t = np.array(t)
 
 
-path2 = Path("../data/ParsedModels/NMDA_TCN__DWT_7_128_153__model/model.json")
+path2 = Path("../data/ParsedModels/NMDA_TCN__DWT_8_224_217__model/model.json")
 
 data2 = path2.open(mode="rb")
 d2 = json.load(data2)
 
 
 # Change the directory to fetch the .h5 files
-dataFile = Path("../data/Models/NMDA_TCN__DWT_7_128_153__model.h5")
+dataFile = Path("../data/Models/NMDA_TCN__DWT_8_224_217__model.h5")
 
 # Load the Keras model and show its architecture
 NN_model = tf.keras.models.load_model(dataFile)
@@ -78,27 +78,29 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         # convolutional layers
-        self.conv1 = CausalConv1d(in_channels=1278, out_channels=128, kernel_size=45, stride=(
+        self.conv1 = CausalConv1d(in_channels=1278, out_channels=512, kernel_size=3, stride=(
             1,), dilation=1, groups=1, bias=True)
-        self.conv2 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
+        self.conv2 = CausalConv1d(in_channels=512, out_channels=384, kernel_size=5, stride=(
             1,), dilation=1, groups=1, bias=True)
-        self.conv3 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
+        self.conv3 = CausalConv1d(in_channels=384, out_channels=256, kernel_size=7, stride=(
             1,), dilation=1, groups=1, bias=True)
-        self.conv4 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
+        self.conv4 = CausalConv1d(in_channels=256, out_channels=128, kernel_size=9, stride=(
             1,), dilation=1, groups=1, bias=True)
         self.conv5 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
             1,), dilation=1, groups=1, bias=True)
-        self.conv6 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
+        self.conv6 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=39, stride=(
             1,), dilation=1, groups=1, bias=True)
-        self.conv7 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
+        self.conv7 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=59, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv8 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=83, stride=(
             1,), dilation=1, groups=1, bias=True)
 
         # batch normalization layers
-        self.batch1 = nn.BatchNorm1d(num_features=128, eps=0.001, momentum=0.99,
+        self.batch1 = nn.BatchNorm1d(num_features=500, eps=0.001, momentum=0.99,
                                      affine=True, track_running_stats=True, device=None, dtype=None)
-        self.batch2 = nn.BatchNorm1d(num_features=128, eps=0.001, momentum=0.99,
+        self.batch2 = nn.BatchNorm1d(num_features=384, eps=0.001, momentum=0.99,
                                      affine=True, track_running_stats=True, device=None, dtype=None)
-        self.batch3 = nn.BatchNorm1d(num_features=128, eps=0.001, momentum=0.99,
+        self.batch3 = nn.BatchNorm1d(num_features=256, eps=0.001, momentum=0.99,
                                      affine=True, track_running_stats=True, device=None, dtype=None)
         self.batch4 = nn.BatchNorm1d(num_features=128, eps=0.001, momentum=0.99,
                                      affine=True, track_running_stats=True, device=None, dtype=None)
@@ -108,13 +110,15 @@ class Net(nn.Module):
                                      affine=True, track_running_stats=True, device=None, dtype=None)
         self.batch7 = nn.BatchNorm1d(num_features=128, eps=0.001, momentum=0.99,
                                      affine=True, track_running_stats=True, device=None, dtype=None)
+        self.batch8 = nn.BatchNorm1d(num_features=128, eps=0.001, momentum=0.99,
+                                     affine=True, track_running_stats=True, device=None, dtype=None)
 
         # output predictions
         self.spikes = CausalConv1d(in_channels=128, out_channels=1, kernel_size=1, stride=(
             1,), dilation=1, groups=1, bias=True)
         self.soma = CausalConv1d(in_channels=128, out_channels=1, kernel_size=1, stride=(
             1,), dilation=1, groups=1, bias=True)
-        self.dendrites = CausalConv1d(in_channels=128, out_channels=20, kernel_size=1, stride=(
+        self.dendrites = CausalConv1d(in_channels=128, out_channels=64, kernel_size=1, stride=(
             1,), dilation=1, groups=1, bias=True)
 
     def forward(self, x):
@@ -139,6 +143,9 @@ class Net(nn.Module):
         x = self.conv7(x)
         x = F.relu(x)
         x = self.batch7(x)
+        x = self.conv8(x)
+        x = F.relu(x)
+        x = self.batch8(x)
 
         spikes = self.spikes(x)
         spikes = F.sigmoid(spikes)
@@ -168,9 +175,12 @@ print(f'keras weight {weights[30].shape} and Pytorch weight {net.conv6.weight.sh
 print(f'keras weight {weights[32].shape} and Pytorch weight {net.batch6.weight.shape}')
 print(f'keras weight {weights[36].shape} and Pytorch weight {net.conv7.weight.shape}')
 print(f'keras weight {weights[38].shape} and Pytorch weight {net.batch7.weight.shape}')
-print(f'keras weight {weights[42].shape} and Pytorch weight {net.spikes.weight.shape}')
-print(f'keras weight {weights[44].shape} and Pytorch weight {net.soma.weight.shape}')
-print(f'keras weight {weights[46].shape} and Pytorch weight {net.dendrites.weight.shape}')
+print(f'keras weight {weights[42].shape} and Pytorch weight {net.conv8.weight.shape}')
+print(f'keras weight {weights[44].shape} and Pytorch weight {net.batch8.weight.shape}')
+print(f'keras weight {weights[48].shape} and Pytorch weight {net.spikes.weight.shape}')
+print(f'keras weight {weights[50].shape} and Pytorch weight {net.soma.weight.shape}')
+print(f'keras weight {weights[52].shape} and Pytorch weight {net.dendrites.weight.shape}')
+
 
 # Load the weights into Pytorch Model
 # Transpose the weights, but not the biases (Keras vs Pytorch syntax)
@@ -247,14 +257,24 @@ net.batch7.bias.data = torch.from_numpy(weights[39])
 net.batch7.running_mean.data = torch.from_numpy(weights[40])
 net.batch7.running_var.data = torch.from_numpy(weights[41])
 
+# Convolutional Layer 8
+net.conv8.weight.data = torch.from_numpy(np.transpose(weights[42]))
+net.conv8.bias.data = torch.from_numpy(weights[43])
+
+# Batch Layer 8
+net.batch8.weight.data = torch.from_numpy(weights[44])
+net.batch8.bias.data = torch.from_numpy(weights[45])
+net.batch8.running_mean.data = torch.from_numpy(weights[46])
+net.batch8.running_var.data = torch.from_numpy(weights[47])
+
 # Spike Output Layer
-net.spikes.weight.data = torch.from_numpy(np.transpose(weights[42]))
-net.conv1.bias.data = torch.from_numpy(weights[43])
+net.spikes.weight.data = torch.from_numpy(np.transpose(weights[48]))
+net.conv1.bias.data = torch.from_numpy(weights[49])
 
 # Soma Output Layer
-net.soma.weight.data = torch.from_numpy(np.transpose(weights[44]))
-net.conv1.bias.data = torch.from_numpy(weights[45])
+net.soma.weight.data = torch.from_numpy(np.transpose(weights[50]))
+net.conv1.bias.data = torch.from_numpy(weights[51])
 
 # Dendrite Output Layer
-net.dendrites.weight.data = torch.from_numpy(np.transpose(weights[46]))
-net.conv1.bias.data = torch.from_numpy(weights[47])
+net.dendrites.weight.data = torch.from_numpy(np.transpose(weights[52]))
+net.conv1.bias.data = torch.from_numpy(weights[53])
