@@ -60,19 +60,19 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         # convolutional layers
-        self.conv1 = CausalConv1d(in_channels=1278, out_channels=128, kernel_size=45, stride=(
+        self.conv1 = CausalConv1d(in_channels=1278, out_channels=400, kernel_size=45, stride=(
             1,), dilation=1, groups=1, bias=True)
-        self.conv2 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
+        self.conv2 = CausalConv1d(in_channels=128, out_channels=400, kernel_size=19, stride=(
             1,), dilation=1, groups=1, bias=True)
-        self.conv3 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
+        self.conv3 = CausalConv1d(in_channels=128, out_channels=400, kernel_size=19, stride=(
             1,), dilation=1, groups=1, bias=True)
-        self.conv4 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
+        self.conv4 = CausalConv1d(in_channels=128, out_channels=400, kernel_size=19, stride=(
             1,), dilation=1, groups=1, bias=True)
-        self.conv5 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
+        self.conv5 = CausalConv1d(in_channels=128, out_channels=400, kernel_size=19, stride=(
             1,), dilation=1, groups=1, bias=True)
-        self.conv6 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
+        self.conv6 = CausalConv1d(in_channels=128, out_channels=400, kernel_size=19, stride=(
             1,), dilation=1, groups=1, bias=True)
-        self.conv7 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
+        self.conv7 = CausalConv1d(in_channels=128, out_channels=400, kernel_size=19, stride=(
             1,), dilation=1, groups=1, bias=True)
 
         # batch normalization layers
@@ -235,7 +235,7 @@ net.soma.weight.data = torch.from_numpy(np.transpose(weights[44]))
 net.conv1.bias.data = torch.from_numpy(weights[45])
 
 
-net.spikes.weight.data = torch.from_numpy(np.transpose(weights[46]))
+net.dendrites.weight.data = torch.from_numpy(np.transpose(weights[46]))
 net.conv1.bias.data = torch.from_numpy(weights[47])
 
 
