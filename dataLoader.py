@@ -166,7 +166,7 @@ def parseSimulationFileForModel(filePath):
 X, soma, nexus, dvt, spike = parseSimulationFileForModel(modelPaths[0])
 
 
-dataset = SimulationDataset(X, spike, windowSize=150)
+dataset = SimulationDataset(X, spike, windowSize=400)
 
 # Visualize a random sample from the data
 # synapses, spike = dataset[50]
