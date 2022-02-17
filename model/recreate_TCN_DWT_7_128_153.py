@@ -8,6 +8,23 @@ import tensorflow as tf
 from tensorflow import keras
 from pathlib import Path
 
+import json 
+
+# Load the parsed weights from models to determine location of weights to load
+path = Path("../data/ParsedModels/NMDA_TCN__DWT_7_128_153__model/weights.json")
+
+data = path.open(mode="rb")
+
+d = json.load(data)
+t = d[2]["data"]
+t = np.array(t)
+
+
+path2 = Path("../data/ParsedModels/NMDA_TCN__DWT_7_128_153__model/model.json")
+
+data2 = path2.open(mode="rb")
+d2 = json.load(data2)
+
 
 # Change the directory to fetch the .h5 files
 dataFile = Path("../data/Models/NMDA_TCN__DWT_7_128_153__model.h5")
@@ -19,6 +36,7 @@ print("Summary done");
 # Read the .h5 model that corresponds to the correct model architecture
 model = keras.models.load_model(dataFile)
 weights = model.get_weights()
+
 
 # Define the Pytorch Architecture (Inspired by the Keras Model)
 
@@ -160,9 +178,9 @@ net.conv1.bias.data = torch.from_numpy(weights[1])
 
 #Batch Layer 1
 net.batch1.weight.data = torch.from_numpy(weights[2])
-net.batch1.bias[0].data = torch.from_numpy(weights[3])
-net.batch1.bias[1].data = torch.from_numpy(weights[4])
-net.batch1.bias[2].data = torch.from_numpy(weights[5])
+net.batch1.bias.data = torch.from_numpy(weights[3])
+net.batch1.running_mean.data = torch.from_numpy(weights[4])
+net.batch1.running_var.data = torch.from_numpy(weights[5])
 
 
 #Convolutional Layer 2
@@ -171,9 +189,9 @@ net.conv2.bias.data = torch.from_numpy(weights[7])
 
 #Batch Layer 2
 net.batch2.weight.data = torch.from_numpy(weights[8])
-net.batch2.bias[0].data = torch.from_numpy(weights[9])
-net.batch2.bias[1].data = torch.from_numpy(weights[10])
-net.batch2.bias[2].data = torch.from_numpy(weights[11])
+net.batch2.bias.data = torch.from_numpy(weights[9])
+net.batch2.running_mean.data = torch.from_numpy(weights[10])
+net.batch2.running_var.data = torch.from_numpy(weights[11])
 
 
 #Convolutional Layer 3
@@ -182,9 +200,9 @@ net.conv3.bias.data = torch.from_numpy(weights[13])
 
 #Batch Layer 3
 net.batch3.weight.data= torch.from_numpy(weights[14])
-net.batch3.bias[0].data = torch.from_numpy(weights[15])
-net.batch3.bias[1].data = torch.from_numpy(weights[16])
-net.batch3.bias[2].data = torch.from_numpy(weights[17])
+net.batch3.bias.data = torch.from_numpy(weights[15])
+net.batch3.running_mean.data = torch.from_numpy(weights[16])
+net.batch3.running_var.data = torch.from_numpy(weights[17])
 
 #Convolutional Layer 4
 net.conv4.weight.data = torch.from_numpy(np.transpose(weights[18]))
@@ -192,9 +210,9 @@ net.conv1.bias.data = torch.from_numpy(weights[19])
 
 #Batch Layer 4
 net.batch4.weight.data = torch.from_numpy(weights[20])
-net.batch4.bias[0].data = torch.from_numpy(weights[21])
-net.batch4.bias[1].data = torch.from_numpy(weights[22])
-net.batch4.bias[2].data = torch.from_numpy(weights[23])
+net.batch4.bias.data = torch.from_numpy(weights[21])
+net.batch4.running_mean.data = torch.from_numpy(weights[22])
+net.batch4.running_var.data = torch.from_numpy(weights[23])
 
 
 #Convolutional Layer 5
@@ -213,9 +231,9 @@ net.conv6.bias.data = torch.from_numpy(weights[31])
 
 #Batch Layer 6
 net.batch6.weight.data = torch.from_numpy(weights[32])
-net.batch6.bias[0].data = torch.from_numpy(weights[33])
-net.batch6.bias[1].data = torch.from_numpy(weights[34])
-net.batch6.bias[2].data = torch.from_numpy(weights[35])
+net.batch6.bias.data = torch.from_numpy(weights[33])
+net.batch6.running_mean.data = torch.from_numpy(weights[34])
+net.batch6.running_var.data = torch.from_numpy(weights[35])
 
 #Convolutional Layer 7
 net.conv7.weight.data = torch.from_numpy(np.transpose(weights[36]))
@@ -223,36 +241,22 @@ net.conv7.bias.data = torch.from_numpy(weights[37])
 
 #Batch Layer 7
 net.batch7.weight.data = torch.from_numpy(weights[38])
-net.batch7.bias[0].data = torch.from_numpy(weights[39])
-net.batch7.bias[1].data = torch.from_numpy(weights[40])
-net.batch7.bias[2].data = torch.from_numpy(weights[41])
+net.batch7.bias.data = torch.from_numpy(weights[39])
+net.batch7.running_mean.data = torch.from_numpy(weights[40])
+net.batch7.running_var.data = torch.from_numpy(weights[41])
 
+#Spike Output Layer
 net.spikes.weight.data = torch.from_numpy(np.transpose(weights[42]))
 net.conv1.bias.data = torch.from_numpy(weights[43])
 
-
+# Soma Output Layer
 net.soma.weight.data = torch.from_numpy(np.transpose(weights[44]))
 net.conv1.bias.data = torch.from_numpy(weights[45])
 
-
+#Dendrite Output Layer
 net.dendrites.weight.data = torch.from_numpy(np.transpose(weights[46]))
 net.conv1.bias.data = torch.from_numpy(weights[47])
 
 
-import json 
-from pathlib import Path
 
-path = Path("../data/ParsedModels/NMDA_TCN__DWT_7_128_153__model/weights.json")
-
-data = path.open(mode="rb")
-
-d = json.load(data)
-t = d[2]["data"]
-t = np.array(t)
-
-
-path2 = Path("../data/ParsedModels/NMDA_TCN__DWT_7_128_153__model/model.json")
-
-data2 = path2.open(mode="rb")
-d2 = json.load(data2)
 
