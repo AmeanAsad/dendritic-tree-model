@@ -4,37 +4,18 @@ import torch.nn.functional as F
 
 import numpy as np
 
-import tensorflow as tf
 from tensorflow import keras
 from pathlib import Path
-
-import json
-
-# Load the parsed weights from models to determine location of weights to load
-path = Path("../data/ParsedModels/NMDA_TCN__DWT_7_292_169__model/weights.json")
-
-data = path.open(mode="rb")
-
-d = json.load(data)
-t = d[2]["data"]
-t = np.array(t)
-
-
-path2 = Path("../data/ParsedModels/NMDA_TCN__DWT_7_292_169__model/model.json")
-
-data2 = path2.open(mode="rb")
-d2 = json.load(data2)
 
 
 # Change the directory to fetch the .h5 files
 dataFile = Path("../data/Models/NMDA_TCN__DWT_7_292_169__model.h5")
 
 # Load the Keras model and show its architecture
-NN_model = tf.keras.models.load_model(dataFile)
-NN_model.summary()
-print("Summary done")
 # Read the .h5 model that corresponds to the correct model architecture
 model = keras.models.load_model(dataFile)
+model.summary()
+
 weights = model.get_weights()
 
 
@@ -78,20 +59,20 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         # convolutional layers
-        self.conv1 = CausalConv1d(in_channels=1278, out_channels=512, kernel_size=(3,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv2 = CausalConv1d(in_channels=512, out_channels=256, kernel_size=(7,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv3 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=(13,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv4 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=(21,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv5 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=(31,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv6 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=(43,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv7 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=(57,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
+        self.conv1 = CausalConv1d(in_channels=1278, out_channels=512, kernel_size=3, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv2 = CausalConv1d(in_channels=512, out_channels=256, kernel_size=7, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv3 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=13, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv4 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=21, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv5 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=31, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv6 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=43, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv7 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=57, stride=(
+            1,), dilation=1, groups=1, bias=True)
 
         # batch normalization layers
         self.batch1 = nn.BatchNorm1d(num_features=512, eps=0.001, momentum=0.99,
@@ -110,12 +91,12 @@ class Net(nn.Module):
                                      affine=True, track_running_stats=True, device=None, dtype=None)
 
         # output predictions
-        self.spikes = CausalConv1d(in_channels=256, out_channels=1, kernel_size=(1,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.soma = CausalConv1d(in_channels=256, out_channels=1, kernel_size=(1,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.dendrites = CausalConv1d(in_channels=256, out_channels=64, kernel_size=(1,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
+        self.spikes = CausalConv1d(in_channels=256, out_channels=1, kernel_size=1, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.soma = CausalConv1d(in_channels=256, out_channels=1, kernel_size=1, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.dendrites = CausalConv1d(in_channels=256, out_channels=64, kernel_size=1, stride=(
+            1,), dilation=1, groups=1, bias=True)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -139,38 +120,37 @@ class Net(nn.Module):
         x = self.conv7(x)
         x = F.relu(x)
         x = self.batch7(x)
-
         spikes = self.spikes(x)
         spikes = F.sigmoid(spikes)
-        soma = self.soma(x)
-        soma = F.linear(soma)
-        dendrites = self.dendrites(x)
-        dendrites = F.linear(dendrites)
+        # soma = self.soma(x)
+        # soma = F.linear(soma)
+        # dendrites = self.dendrites(x)
+        # dendrites = F.linear(dendrites)
 
-        return spikes, soma, dendrites
+        return spikes
 
 
 net = Net()
 
 
 # Compare the Keras and Pytorch Weights to verify correctness of defined Pytorch model
-print(f'keras weight {weights[0].shape} and Pytorch weight {net.conv1.weight.shape}')
-print(f'keras weight {weights[1].shape} and Pytorch weight {net.conv1.bias.shape}')
-print(f'keras weight {weights[6].shape} and Pytorch weight {net.conv2.weight.shape}')
-print(f'keras weight {weights[8].shape} and Pytorch weight {net.batch2.weight.shape}')
-print(f'keras weight {weights[12].shape} and Pytorch weight {net.conv3.weight.shape}')
-print(f'keras weight {weights[14].shape} and Pytorch weight {net.batch3.weight.shape}')
-print(f'keras weight {weights[18].shape} and Pytorch weight {net.conv4.weight.shape}')
-print(f'keras weight {weights[20].shape} and Pytorch weight {net.batch4.weight.shape}')
-print(f'keras weight {weights[24].shape} and Pytorch weight {net.conv5.weight.shape}')
-print(f'keras weight {weights[26].shape} and Pytorch weight {net.batch5.weight.shape}')
-print(f'keras weight {weights[30].shape} and Pytorch weight {net.conv6.weight.shape}')
-print(f'keras weight {weights[32].shape} and Pytorch weight {net.batch6.weight.shape}')
-print(f'keras weight {weights[36].shape} and Pytorch weight {net.conv7.weight.shape}')
-print(f'keras weight {weights[38].shape} and Pytorch weight {net.batch7.weight.shape}')
-print(f'keras weight {weights[42].shape} and Pytorch weight {net.spikes.weight.shape}')
-print(f'keras weight {weights[44].shape} and Pytorch weight {net.soma.weight.shape}')
-print(f'keras weight {weights[46].shape} and Pytorch weight {net.dendrites.weight.shape}')
+# print(f'keras weight {weights[0].shape} and Pytorch weight {net.conv1.weight.shape}')
+# print(f'keras weight {weights[1].shape} and Pytorch weight {net.conv1.bias.shape}')
+# print(f'keras weight {weights[6].shape} and Pytorch weight {net.conv2.weight.shape}')
+# print(f'keras weight {weights[8].shape} and Pytorch weight {net.batch2.weight.shape}')
+# print(f'keras weight {weights[12].shape} and Pytorch weight {net.conv3.weight.shape}')
+# print(f'keras weight {weights[14].shape} and Pytorch weight {net.batch3.weight.shape}')
+# print(f'keras weight {weights[18].shape} and Pytorch weight {net.conv4.weight.shape}')
+# print(f'keras weight {weights[20].shape} and Pytorch weight {net.batch4.weight.shape}')
+# print(f'keras weight {weights[24].shape} and Pytorch weight {net.conv5.weight.shape}')
+# print(f'keras weight {weights[26].shape} and Pytorch weight {net.batch5.weight.shape}')
+# print(f'keras weight {weights[30].shape} and Pytorch weight {net.conv6.weight.shape}')
+# print(f'keras weight {weights[32].shape} and Pytorch weight {net.batch6.weight.shape}')
+# print(f'keras weight {weights[36].shape} and Pytorch weight {net.conv7.weight.shape}')
+# print(f'keras weight {weights[38].shape} and Pytorch weight {net.batch7.weight.shape}')
+# print(f'keras weight {weights[42].shape} and Pytorch weight {net.spikes.weight.shape}')
+# print(f'keras weight {weights[44].shape} and Pytorch weight {net.soma.weight.shape}')
+# print(f'keras weight {weights[46].shape} and Pytorch weight {net.dendrites.weight.shape}')
 
 
 # Load the weights into Pytorch Model

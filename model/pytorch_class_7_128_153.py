@@ -1,11 +1,10 @@
 from __future__ import print_function
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 
 # Define Causal Convolution 1D (no built-in padding style like this exists in Pytorch)
-class CausalConv1d(torch.nn.Conv1d):
+class CausalConv1d(nn.Conv1d):
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -42,20 +41,20 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         # convolutional layers
-        self.conv1 = CausalConv1d(in_channels=1278, out_channels=128, kernel_size=(45,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv2 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=(19,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv3 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=(19,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv4 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=(19,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv5 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=(19,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv6 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=(19,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv7 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=(19,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
+        self.conv1 = CausalConv1d(in_channels=1278, out_channels=128, kernel_size=45, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv2 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv3 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv4 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv5 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv6 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv7 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=19, stride=(
+            1,), dilation=1, groups=1, bias=True)
 
         # batch normalization layers
         self.batch1 = nn.BatchNorm1d(num_features=128, eps=0.001, momentum=0.99,
@@ -74,12 +73,12 @@ class Net(nn.Module):
                                      affine=True, track_running_stats=True, device=None, dtype=None)
 
         # output predictions
-        self.spikes = CausalConv1d(in_channels=128, out_channels=1, kernel_size=(1,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.soma = CausalConv1d(in_channels=128, out_channels=1, kernel_size=(1,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
+        self.spikes = CausalConv1d(in_channels=128, out_channels=1, kernel_size=1, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.soma = CausalConv1d(in_channels=128, out_channels=1, kernel_size=1, stride=(
+            1,), dilation=1, groups=1, bias=True)
         self.dendrites = CausalConv1d(in_channels=128, out_channels=20, kernel_size=(1,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
+            1,), dilation=1, groups=1, bias=True)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -110,5 +109,4 @@ class Net(nn.Module):
         soma = F.linear(soma)
         dendrites = self.dendrites(x)
         dendrites = F.linear(dendrites)
-
         return spikes, soma, dendrites

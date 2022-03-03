@@ -6,7 +6,7 @@ import torch.nn.functional as F
 # Define the Pytorch Architecture (Inspired by the Keras Model)
 
 # Define Causal Convolution 1D (no built-in padding style like this exists in Pytorch)
-class CausalConv1d(torch.nn.Conv1d):
+class CausalConv1d(nn.Conv1d):
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -43,20 +43,20 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         # convolutional layers
-        self.conv1 = CausalConv1d(in_channels=1278, out_channels=512, kernel_size=(3,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv2 = CausalConv1d(in_channels=512, out_channels=256, kernel_size=(7,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv3 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=(13,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv4 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=(21,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv5 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=(31,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv6 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=(43,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv7 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=(57,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
+        self.conv1 = CausalConv1d(in_channels=1278, out_channels=512, kernel_size=3, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv2 = CausalConv1d(in_channels=512, out_channels=256, kernel_size=7, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv3 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=13, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv4 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=21, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv5 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=31, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv6 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=43, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv7 = CausalConv1d(in_channels=256, out_channels=256, kernel_size=57, stride=(
+            1,), dilation=1, groups=1, bias=True)
 
         # batch normalization layers
         self.batch1 = nn.BatchNorm1d(num_features=512, eps=0.001, momentum=0.99,
@@ -75,12 +75,12 @@ class Net(nn.Module):
                                      affine=True, track_running_stats=True, device=None, dtype=None)
 
         # output predictions
-        self.spikes = CausalConv1d(in_channels=256, out_channels=1, kernel_size=(1,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.soma = CausalConv1d(in_channels=256, out_channels=1, kernel_size=(1,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.dendrites = CausalConv1d(in_channels=256, out_channels=64, kernel_size=(1,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
+        self.spikes = CausalConv1d(in_channels=256, out_channels=1, kernel_size=1, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.soma = CausalConv1d(in_channels=256, out_channels=1, kernel_size=1, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.dendrites = CausalConv1d(in_channels=256, out_channels=64, kernel_size=1, stride=(
+            1,), dilation=1, groups=1, bias=True)
 
     def forward(self, x):
         x = self.conv1(x)
