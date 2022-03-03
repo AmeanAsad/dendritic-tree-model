@@ -14,10 +14,11 @@ from dataset import SimulationDataset
 from torch.utils.data import DataLoader
 from matplotlib import pyplot as plt
 
-dataFile = Path("data/simulations")
+dataFile = Path("../data/simulations")
 
 modelPaths = [p for p in list(dataFile.glob("*.p"))]
 
+print("------------------", modelPaths)
 
 def spikeDictToArray(spikeTimes, numOfSegments, numDataPoints):
 
@@ -163,10 +164,11 @@ def parseSimulationFileForModel(filePath):
     return X, somaVoltages, nexusVoltages, dendriticVoltages, spikeVals
 
 
-X, soma, nexus, dvt, spike = parseSimulationFileForModel(modelPaths[0])
+def getDataset():
+    X, soma, nexus, dvt, spike = parseSimulationFileForModel(modelPaths[0])
+    return SimulationDataset(X, spike, windowSize=500)
 
-
-dataset = SimulationDataset(X, spike, windowSize=150)
+# dataset = getDataset()
 
 # Visualize a random sample from the data
 # synapses, spike = dataset[50]

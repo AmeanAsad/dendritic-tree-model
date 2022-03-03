@@ -44,24 +44,24 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
         #convolutional layers
-        self.conv1 = CausalConv1d(in_channels=1278, out_channels=512, kernel_size=(3,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv2 = CausalConv1d(in_channels=512, out_channels=512, kernel_size=(5,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv3 = CausalConv1d(in_channels=512, out_channels=384, kernel_size=(7,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv4 = CausalConv1d(in_channels=384, out_channels=256, kernel_size=(9,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv5 = CausalConv1d(in_channels=256, out_channels=128, kernel_size=(11,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv6 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=(25,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv7 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=(40,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv8 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=(60,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.conv9 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=(89,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
+        self.conv1 = CausalConv1d(in_channels=1278, out_channels=512, kernel_size=3, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv2 = CausalConv1d(in_channels=512, out_channels=512, kernel_size=5, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv3 = CausalConv1d(in_channels=512, out_channels=384, kernel_size=7, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv4 = CausalConv1d(in_channels=384, out_channels=256, kernel_size=9, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv5 = CausalConv1d(in_channels=256, out_channels=128, kernel_size=11, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv6 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=25, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv7 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=40, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv8 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=60, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.conv9 = CausalConv1d(in_channels=128, out_channels=128, kernel_size=89, stride=(
+            1,), dilation=1, groups=1, bias=True)
 
         #batch normalization layers
         self.batch1 = nn.BatchNorm1d(num_features=512, eps=0.001, momentum=0.99,
@@ -84,12 +84,12 @@ class Net(nn.Module):
                                      affine=True, track_running_stats=True, device=None, dtype=None)
 
     #output predictions
-        self.spikes = CausalConv1d(in_channels=128, out_channels=1, kernel_size=(1,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.soma = CausalConv1d(in_channels=128, out_channels=1, kernel_size=(1,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
-        self.dendrites = CausalConv1d(in_channels=128, out_channels=64, kernel_size=(1,), stride=(
-            1,), dilation=(1,), groups=1, bias=True)
+        self.spikes = CausalConv1d(in_channels=128, out_channels=1, kernel_size=1, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.soma = CausalConv1d(in_channels=128, out_channels=1, kernel_size=1, stride=(
+            1,), dilation=1, groups=1, bias=True)
+        self.dendrites = CausalConv1d(in_channels=128, out_channels=64, kernel_size=1, stride=(
+            1,), dilation=1, groups=1, bias=True)
 
     def forward(self, x):
         x = self.conv1(x)
