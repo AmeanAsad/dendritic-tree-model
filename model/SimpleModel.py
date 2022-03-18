@@ -7,6 +7,11 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 
+from torch.utils.data import DataLoader
+from dataLoader import getDataset
+import torch
+
+
 
 class Net(nn.Module):
     def __init__(self):
@@ -32,7 +37,6 @@ class Net(nn.Module):
 
 
 net = Net()
-
 
 def train(args, model, device, train_loader, optimizer, epoch):
     model.train()
@@ -115,13 +119,10 @@ def main():
     ])
 
     # need to edit
+    data = getDataset()
+    # dataset = DataLoader(data, batch_size=64, num_workers = 1)
 
-    dataset1 = datasets.MNIST('../data', train=True, download=True,
-                              transform=transform)
-    dataset2 = datasets.MNIST('../data', train=False,
-                              transform=transform)
-    train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
-    test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
+    train_loader = torch.utils.data.DataLoader(data,**train_kwargs)
 
     model = Net().to(device)
     optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
