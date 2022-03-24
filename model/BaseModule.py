@@ -18,28 +18,39 @@ import torch
 from torch.optim import Adam
 import matplotlib.pyplot as plt
 
+def accuracy(outputs, targets):
+        _, preds = torch.max(outputs, dim=1)
+        return torch.tensor(torch.sum(preds == targets).item() / len(preds))
+
 class BaseModule(nn.Module):
     def training_step(self, batch):
+        mse_loss = nn.MSELoss()
         inputs, targets = batch
         out = self(targets)
-        loss = F.cross_entropy(out, targets)
+        print(len(out), len(targets))
+        loss = mse_loss(out, targets)
         return loss
 
     def validation_step(self, batch):
+        mse_loss = nn.MSELoss()
         inputs, targets = batch
         out = self(targets)
-        loss = F.cross_entropy(out, targets)
+        print(len(out), len(targets))
+        loss = mse_loss(out, targets)
         acc = accuracy(out, targets)
         return {'val_loss': loss.detach(), 'val_acc': acc}
 
     def train_val_step(self, batch):
+        mse_loss = nn.MSELoss()
         inputs, targets = batch
         out = self(inputs)
-        loss = F.cross_entropy(out, targets)
+        print(len(out), len(targets))
+        loss = mse_loss(out, targets)
         acc = accuracy(out, targets)
         return {'train_loss': loss.detach(), 'train_acc': acc}
 
     def validation_epoch_end(self, outputs):
+        mse_loss = nn.MSELoss()
         batch_losses = [x['val_loss'] for x in outputs]
         epoch_loss = torch.stack(batch_losses).mean()
         batch_accs = [x['val_acc'] for x in outputs]
