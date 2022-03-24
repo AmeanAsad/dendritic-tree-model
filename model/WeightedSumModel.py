@@ -4,39 +4,16 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 
 from torch.utils.data import DataLoader
 from dataLoader import getDataset
 import torch
+from torch.optim import Adam
+import matplotlib.pyplot as plt
+from BaseModule import BaseModule
 
 
-
-#-----------------------------------------------------------------------------
-#           Current Standard - Weighted Sum
-#-----------------------------------------------------------------------------
-'''
-Current Standard:
-    * Weighted sum of inputs to output
-    
-'''
-
-class BaseNet(nn.Module):
-    def __init__(self):
-        super(BaseNet, self).__init__()
-        
-        self.net = nn.Sequential(
-            nn.Linear(1278, 1),
-            
-            )
-        
-
-    def forward(self, x):
-        return self.net(x)
-
-
-net = BaseNet()
 
 #-----------------------------------------------------------------------------
 #           Define Helper Functions
@@ -57,7 +34,6 @@ def to_device(data, device):
     return data.to(device, non_blocking=True)
 
 
-
 class DeviceDataLoader():
     """Wrap a dataloader to move data to a device"""
 
@@ -75,30 +51,32 @@ class DeviceDataLoader():
         return len(self.dl)
 
 
+def accuracy(outputs, targets):
+    _, preds = torch.max(outputs, dim=1)
+    return torch.tensor(torch.sum(preds == targets).item() / len(preds))
+
+#-----------------------------------------------------------------------------
+#           Load the train and test data
+#-----------------------------------------------------------------------------
+trainData = getDataset()
+train_dl = DataLoader(trainData, batch_size=1278, num_workers = 4)
+device = get_default_device()
+train_loader = DeviceDataLoader(train_dl, device)
+
+#Fix this in the future but keep it in for now
+testData = trainData
+val_loader = DeviceDataLoader(train_dl, device)
+
+
+
+#-----------------------------------------------------------------------------
+#           Training and Testing Functions
+#-----------------------------------------------------------------------------
+@torch.no_grad()
 def evaluate(model, val_loader):
     model.eval()
-    with torch.no_grad():
-        count = 0
-        correct = 0
-        total = 0
-        for i, data in enumerate(testData, 0):           
-            count +=1
-            # Get inputs
-            inputs, targets = data
-            print("targets", targets.shape)
-            print("inputs ", inputs.shape)
-            # Generate outputs
-            outputs = network(inputs.float())
-            print("output", outputs.shape)
-            # Set total and correct
-            _, predicted = torch.max(outputs.data, 1)
-            print("Predictions", predicted.shape)
-            total += targets.size(0)
-            correct += (predicted == targets).sum().item()
-            if count > 50:
-                break
-        # Print accuracy
-        print('Accuracy: %d %%' % (100 * correct / total))
+    outputs = [model.validation_step(batch) for batch in val_loader]
+    return model.validation_epoch_end(outputs)
 
 def fit(epochs, lr, model, train_loader, val_loader, opt_func=torch.optim.SGD):
     history = []
@@ -152,18 +130,28 @@ def plotResults(history,name):
 histories = []
 
 #-----------------------------------------------------------------------------
-# Load the train and test data
+#           Current Standard - Weighted Sum
 #-----------------------------------------------------------------------------
-train_data = getDataset()
-train_dl = DataLoader(train_data, batch_size=64, num_workers = 4)
-device = get_default_device()
-train_loader = DeviceDataLoader(train_dl, device)
 
-network = BaseNet()
+class BasicNet(BaseModule):
+    def __init__(self):
+        super(BasicNet, self).__init__()
+        
+        self.net = nn.Sequential(
+            nn.Linear(1278, 1),
+            
+            )
+        
+
+    def forward(self, x):
+        return self.net(x)
+
+
+network = BasicNet()
 network = network.float()
 
 def main():
-    model = to_device(BaseNet(), device)
+    model = to_device(BasicNet(), device)
     history = [evaluate(model, val_loader)]
     num_epochs = 10
     opt_func = torch.optim.SGD
@@ -173,5 +161,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
