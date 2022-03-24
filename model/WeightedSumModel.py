@@ -59,7 +59,7 @@ def accuracy(outputs, targets):
 #           Load the train and test data
 #-----------------------------------------------------------------------------
 trainData = getDataset()
-train_dl = DataLoader(trainData, batch_size=1278, num_workers = 4)
+train_dl = DataLoader(trainData, batch_size=1278, num_workers = 1)
 device = get_default_device()
 train_loader = DeviceDataLoader(train_dl, device)
 
@@ -152,12 +152,13 @@ network = network.float()
 
 def main():
     model = to_device(BasicNet(), device)
+    model = model.double()
     history = [evaluate(model, val_loader)]
     num_epochs = 10
-    opt_func = torch.optim.SGD
+    opt_func = torch.optim.Adam
     lr = 4e-2
     history += fit(num_epochs, lr, model, train_loader, val_loader)
     histories.append(history)
-
+    
 if __name__ == '__main__':
     main()
