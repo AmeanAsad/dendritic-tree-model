@@ -11,7 +11,7 @@ from dataLoader import getDataset
 import torch
 from torch.optim import Adam
 import matplotlib.pyplot as plt
-from BaseModule import BaseModule
+import BaseModule
 
 
 
@@ -50,16 +50,16 @@ class DeviceDataLoader():
         """Number of batches"""
         return len(self.dl)
 
-
 def accuracy(outputs, targets):
-    _, preds = torch.max(outputs, dim=1)
-    return torch.tensor(torch.sum(preds == targets).item() / len(preds))
+        _, preds = torch.max(outputs, dim=1)
+        return torch.tensor(torch.sum(preds == targets).item() / len(preds))
+
 
 #-----------------------------------------------------------------------------
 #           Load the train and test data
 #-----------------------------------------------------------------------------
 trainData = getDataset()
-train_dl = DataLoader(trainData, batch_size=1278, num_workers = 1)
+train_dl = DataLoader(trainData, batch_size=1278, num_workers = 4)
 device = get_default_device()
 train_loader = DeviceDataLoader(train_dl, device)
 
@@ -133,7 +133,7 @@ histories = []
 #           Current Standard - Weighted Sum
 #-----------------------------------------------------------------------------
 
-class BasicNet(BaseModule):
+class BasicNet(BaseModule.BaseModule):
     def __init__(self):
         super(BasicNet, self).__init__()
         
