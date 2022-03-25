@@ -30,7 +30,7 @@ class SimulationDataset(Dataset):
         # Assuming spike times are listed in the first column of the data, 
         # grabs the spike value (0/1) at a specific time
         endIdx = self.windowSize + idx
-        inputItem = self.inputData[:, idx:endIdx]
+        inputItem = self.inputData[:,:, idx:endIdx]
         outputItem = self.outputData[endIdx, 0]
 
         return inputItem, outputItem

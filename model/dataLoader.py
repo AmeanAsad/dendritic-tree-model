@@ -121,7 +121,7 @@ def parseSimulationFileForModel(filePath):
     data = filePath.open(mode="rb")
     data = pickle.load(data, encoding='latin1')
 
-    dataResults = data["Results"]["listOfSingleSimulationDicts"][4:5]
+    dataResults = data["Results"]["listOfSingleSimulationDicts"][:]
     dataParams = data["Params"]
 
     numDataPoints = dataParams["totalSimDurationInSec"]*1000
@@ -129,9 +129,10 @@ def parseSimulationFileForModel(filePath):
     numOfSegments = len(dataParams["allSegmentsType"])
     synapseCount = 639 * 2  # 639 Inhibitory + 639 Excitatory inputs
 
-    X = np.zeros((synapseCount, numDataPoints*numOfSimulations))
+    X = np.zeros((1, synapseCount, numDataPoints*numOfSimulations))
+    print(X.shape)
     spikeVals = np.zeros((numDataPoints*numOfSimulations, 1))
-    somaVoltages = np.zeros((numDataPoints*numOfSimulations))
+    somaVoltages = np.zeros((numDataPoints*numOfSimulations, 1))
     nexusVoltages = np.zeros((numDataPoints*numOfSimulations))
 
     dendriticVoltages = np.zeros(
@@ -145,13 +146,13 @@ def parseSimulationFileForModel(filePath):
                                             numOfSegments, numDataPoints)
         startIdx = numDataPoints*idx
         endIdx = numDataPoints*(idx + 1)
-        X[:, startIdx: endIdx] = np.vstack((excitatorySpikes, inhibitorySpikes))
+        X[0, :, startIdx: endIdx] = np.vstack((excitatorySpikes, inhibitorySpikes))
         dendriticVoltages[:, startIdx:endIdx] = simulationResult["dendriticVoltagesLowRes"]
 
         spikeTimes = (simulationResult['outputSpikeTimes'].astype(float) - 0.5).astype(int)
         spikeVals[spikeTimes + startIdx, 0] = 1.0
 
-        somaVoltages[startIdx:endIdx] = simulationResult["somaVoltageLowRes"]
+        somaVoltages[startIdx:endIdx,0] = simulationResult["somaVoltageLowRes"]
         nexusVoltages[startIdx:endIdx] = simulationResult["nexusVoltageLowRes"]
 
         somaVoltages[spikeTimes + startIdx] = 30
@@ -167,6 +168,7 @@ def parseSimulationFileForModel(filePath):
 def getDataset():
     X, soma, nexus, dvt, spike = parseSimulationFileForModel(modelPaths[0])
     return SimulationDataset(X, spike, windowSize=1)
+    return SimulationDataset(X, soma, windowSize=150)
 
 # dataset = getDataset()
 
