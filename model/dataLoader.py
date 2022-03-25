@@ -167,7 +167,7 @@ def parseSimulationFileForModel(filePath):
 
 def getDataset():
     X, soma, nexus, dvt, spike = parseSimulationFileForModel(modelPaths[0])
-    return SimulationDataset(X, spike, windowSize=1)
+    print(X.shape)
     return SimulationDataset(X, soma, windowSize=150)
 
 # dataset = getDataset()
