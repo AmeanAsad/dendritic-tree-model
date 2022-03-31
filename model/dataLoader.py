@@ -10,7 +10,7 @@ from pathlib import Path
 import pickle
 import numpy as np
 from timeit import default_timer as timer
-from dataset import SimulationDataset
+from dataset import SimulationDatasetFCN,SimulationDatasetTCN
 from torch.utils.data import DataLoader
 from matplotlib import pyplot as plt
 
@@ -80,7 +80,7 @@ def parseSimulationFile(filePath):
                                             numOfSegments, numDataPoints)
 
         X[:, :, idx] = np.vstack((excitatorySpikes, inhibitorySpikes))
-        dendriticVoltages[:, :, idx] = simulationResult["dendriticVoltagesLowRes"]
+        # dendriticVoltages[:, :, idx] = simulationResult["dendriticVoltagesLowRes"]
 
         spikeTimes = (simulationResult['outputSpikeTimes'].astype(float) - 0.5).astype(int)
         spikeVals[spikeTimes, idx] = 1.0
@@ -99,7 +99,7 @@ def parseSimulationFile(filePath):
     return X, spikeVals, somaVoltages, nexusVoltages, dendriticVoltages, timeStamps
 
 
-def parseSimulationFileForModel(filePath):
+def parseSimulationFileForModel(filePath, numOfSims=10):
     """
     Parameters
     ----------
@@ -121,7 +121,7 @@ def parseSimulationFileForModel(filePath):
     data = filePath.open(mode="rb")
     data = pickle.load(data, encoding='latin1')
 
-    dataResults = data["Results"]["listOfSingleSimulationDicts"][:]
+    dataResults = data["Results"]["listOfSingleSimulationDicts"][:numOfSims]
     dataParams = data["Params"]
 
     numDataPoints = dataParams["totalSimDurationInSec"]*1000
@@ -147,7 +147,7 @@ def parseSimulationFileForModel(filePath):
         startIdx = numDataPoints*idx
         endIdx = numDataPoints*(idx + 1)
         X[0, :, startIdx: endIdx] = np.vstack((excitatorySpikes, inhibitorySpikes))
-        dendriticVoltages[:, startIdx:endIdx] = simulationResult["dendriticVoltagesLowRes"]
+        # dendriticVoltages[:, startIdx:endIdx] = simulationResult["dendriticVoltagesLowRes"]
 
         spikeTimes = (simulationResult['outputSpikeTimes'].astype(float) - 0.5).astype(int)
         spikeVals[spikeTimes + startIdx, 0] = 1.0
@@ -155,7 +155,11 @@ def parseSimulationFileForModel(filePath):
         somaVoltages[startIdx:endIdx,0] = simulationResult["somaVoltageLowRes"]
         nexusVoltages[startIdx:endIdx] = simulationResult["nexusVoltageLowRes"]
 
-        somaVoltages[spikeTimes + startIdx] = 30
+        # somaVoltages[spikeTimes + startIdx] = 30
+    
+    somaVoltages[somaVoltages[:,0] > -55] = -55
+    somaVoltages[:,0] = somaVoltages[:,0] + 67.7
+
 
     # timeStamps = simulationResult["recordingTimeLowRes"]
 
@@ -165,16 +169,32 @@ def parseSimulationFileForModel(filePath):
     return X, somaVoltages, nexusVoltages, dendriticVoltages, spikeVals
 
 
-def getDataset():
-    X, soma, nexus, dvt, spike = parseSimulationFileForModel(modelPaths[0])
-    print(X.shape)
-    return SimulationDataset(X, soma, windowSize=150)
+def getDatasetForTCN(numOfSims=10):
+    X, soma, nexus, dvt, spike = parseSimulationFileForModel(modelPaths[0], numOfSims)
+    
+    dataLength = soma.shape[0]
+    testLength = int(dataLength*0.85)
+    testX = X[:,:, testLength:] 
+    testSoma = soma[testLength:,:]
+    
+    trainX = X[:,:, :testLength]
+    trainSoma = soma[:testLength,:]
 
-# dataset = getDataset()
+  
+    return SimulationDatasetTCN(trainX, trainSoma, windowSize=400), SimulationDatasetTCN(testX, testSoma, windowSize=400)
 
-# Visualize a random sample from the data
-# synapses, spike = dataset[50]
-# print(synapses.shape)
-# plt.figure()
-# plt.imshow(synapses)
-# data_load = DataLoader(dataset, batch_size=64)
+def getDatasetForFCN(numOfSims=10):
+    X, soma, nexus, dvt, spike = parseSimulationFileForModel(modelPaths[0], numOfSims)
+    
+    dataLength = soma.shape[0]
+    testLength = int(dataLength*0.85)
+    testX = X[:,:, testLength:] 
+    testSoma = soma[testLength:,:]
+    
+    trainX = X[:,:, :testLength]
+    trainSoma = soma[:testLength,:]
+   
+    return SimulationDatasetFCN(trainX, trainSoma, windowSize=1), SimulationDatasetFCN(testX, testSoma, windowSize=1)
+
+    
+
