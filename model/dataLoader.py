@@ -18,7 +18,8 @@ dataFile = Path("../data/simulations")
 
 modelPaths = [p for p in list(dataFile.glob("*.p"))]
 
-print("------------------", modelPaths)
+# print("------------------", modelPaths)
+print("Files to render: {num}".format(num=len(modelPaths)))
 
 def spikeDictToArray(spikeTimes, numOfSegments, numDataPoints):
 
@@ -29,6 +30,19 @@ def spikeDictToArray(spikeTimes, numOfSegments, numDataPoints):
         for spikeTime in spikeArray:
             spikeValuesMatrix[idx, spikeTime] = 1.0
     return spikeValuesMatrix
+
+
+def aggregateMultipleFiles(modelPaths):
+    
+    X, soma, nexus, dvt, spike = parseSimulationFileForModel(modelPaths[0], numOfSims=90)
+    
+    for file in modelPaths[1:]:
+        
+        XTemp, somaTemp, nexusT, dvtT, spikeT = parseSimulationFileForModel(file, numOfSims=90)
+        
+        X = np.concatenate((X, XTemp), axis=2)
+        soma = np.concatenate((soma, somaTemp), axis=0)
+    return X, soma
 
 
 def parseSimulationFile(filePath):
@@ -129,11 +143,11 @@ def parseSimulationFileForModel(filePath, numOfSims=10):
     numOfSegments = len(dataParams["allSegmentsType"])
     synapseCount = 639 * 2  # 639 Inhibitory + 639 Excitatory inputs
 
-    X = np.zeros((1, synapseCount, numDataPoints*numOfSimulations))
+    X = np.zeros((1, synapseCount, numDataPoints*numOfSimulations), dtype=np.float16)
     print(X.shape)
-    spikeVals = np.zeros((numDataPoints*numOfSimulations, 1))
+    # spikeVals = np.zeros((numDataPoints*numOfSimulations, 1), dtype=np.float16)
     somaVoltages = np.zeros((numDataPoints*numOfSimulations, 1))
-    nexusVoltages = np.zeros((numDataPoints*numOfSimulations))
+    # nexusVoltages = np.zeros((numDataPoints*numOfSimulations))
 
     dendriticVoltages = np.zeros(
         (numOfSegments, numDataPoints*numOfSimulations), dtype=np.float16)
@@ -150,10 +164,10 @@ def parseSimulationFileForModel(filePath, numOfSims=10):
         # dendriticVoltages[:, startIdx:endIdx] = simulationResult["dendriticVoltagesLowRes"]
 
         spikeTimes = (simulationResult['outputSpikeTimes'].astype(float) - 0.5).astype(int)
-        spikeVals[spikeTimes + startIdx, 0] = 1.0
+        # spikeVals[spikeTimes + startIdx, 0] = 1.0
 
         somaVoltages[startIdx:endIdx,0] = simulationResult["somaVoltageLowRes"]
-        nexusVoltages[startIdx:endIdx] = simulationResult["nexusVoltageLowRes"]
+        # nexusVoltages[startIdx:endIdx] = simulationResult["nexusVoltageLowRes"]
 
         # somaVoltages[spikeTimes + startIdx] = 30
     
@@ -166,7 +180,7 @@ def parseSimulationFileForModel(filePath, numOfSims=10):
     endTime = timer() - startTime
     print("Done, time elapsed: {} \n".format(round(endTime, 3)))
 
-    return X, somaVoltages, nexusVoltages, dendriticVoltages, spikeVals
+    return X, somaVoltages, [], [],[]
 
 
 def getDatasetForTCN(numOfSims=10):
@@ -183,6 +197,21 @@ def getDatasetForTCN(numOfSims=10):
   
     return SimulationDatasetTCN(trainX, trainSoma, windowSize=400), SimulationDatasetTCN(testX, testSoma, windowSize=400)
 
+def getDatasetForTCN2():
+    X, soma = aggregateMultipleFiles(modelPaths)
+    
+    dataLength = soma.shape[0]
+    testLength = int(dataLength*0.85)
+    testX = X[:,:, testLength:] 
+    testSoma = soma[testLength:,:]
+    
+    trainX = X[:,:, :testLength]
+    trainSoma = soma[:testLength,:]
+
+  
+    return SimulationDatasetTCN(trainX, trainSoma, windowSize=400), SimulationDatasetTCN(testX, testSoma, windowSize=400)
+
+
 def getDatasetForFCN(numOfSims=10):
     X, soma, nexus, dvt, spike = parseSimulationFileForModel(modelPaths[0], numOfSims)
     
@@ -197,4 +226,6 @@ def getDatasetForFCN(numOfSims=10):
     return SimulationDatasetFCN(trainX, trainSoma, windowSize=1), SimulationDatasetFCN(testX, testSoma, windowSize=1)
 
     
-
+# X, soma = aggregateMultipleFiles(modelPaths)
+# # print(X.shape)
+# print(soma.shape)
